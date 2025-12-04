@@ -16,7 +16,7 @@ export const verification = async (req, res) => {
         } else {
             const token = authHeader.split(" ")[1];
             jwt.verify(token, process.env.secretKey, async (err, decoded) => {
-                console.log(decoded);
+                console.log("decoded", decoded);
 
                 if (err) {
                     if (err.name === "TokenExpiredError") {

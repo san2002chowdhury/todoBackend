@@ -48,3 +48,64 @@ export const register = async (req, res) => {
         })
     }
 }
+
+export const login = async (req, res) => {
+    try {
+        const { email, password } = req.body;
+        const user = await userSchema.findOne({ email: email });
+
+        if (!user) {
+            return res.status(401).json({
+                success: false,
+                message: "Unauthorized Access",
+            });
+        } else {
+            const passwordCheck = await bcrypt.compare(password, user.password);
+            if (!passwordCheck) {
+                return res.status(401).json({
+                    success: false,
+                    message: "Incorrect password",
+                });
+            } else if (passwordCheck && user.isVerified === true) {
+                const accessToken = jwt.sign(
+                    {
+                        id: user._id,
+                    },
+                    process.env.secretKey,
+                    {
+                        expiresIn: "10days",
+                    }
+                );
+
+                const refreshToken = jwt.sign(
+                    {
+                        id: user._id,
+                    },
+                    process.env.secretKey,
+                    {
+                        expiresIn: "30days",
+                    }
+                );
+
+                user.isLoggedIn = true;
+                await user.save();
+                return res.status(200).json({
+                    success: true,
+                    message: "User Logged in Successfully",
+                    accessToken: accessToken,
+                    refreshToken: refreshToken,
+                    data: user,
+                });
+            } else {
+                res.status(200).json({
+                    message: "Complete Email verification then Login..",
+                });
+            }
+        }
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: error.message,
+        });
+    }
+};
