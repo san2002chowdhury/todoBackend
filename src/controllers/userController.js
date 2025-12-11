@@ -61,11 +61,7 @@ export const login = async (req, res) => {
             else if (passwordCheck && user.isVerified === true) {
 
                 await sessionSchema.findOneAndDelete({ userId: user._id });
-
                 await sessionSchema.create({ userId: user._id });
-
-                // await sessionSchema.create({ userId: user._id });
-
 
                 const accessToken = jwt.sign(
                     { id: user._id },
